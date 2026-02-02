@@ -6,6 +6,8 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface CapacityR2dbcRepository extends ReactiveCrudRepository<CapacityData, Long> {
 
     @Query("SELECT EXISTS(SELECT 1 FROM capacities WHERE name = :name)")
@@ -25,4 +27,7 @@ public interface CapacityR2dbcRepository extends ReactiveCrudRepository<Capacity
 
     @Query("SELECT c.id, c.name, c.description, c.created_at, c.updated_at FROM capacities c LEFT JOIN capacity_technologies ct ON c.id = ct.capacity_id GROUP BY c.id, c.name, c.description, c.created_at, c.updated_at ORDER BY COUNT(ct.technology_id) DESC, c.name ASC LIMIT :limit OFFSET :offset")
     Flux<CapacityData> findAllOrderByTechnologyCountDesc(@Param("limit") int limit, @Param("offset") long offset);
+
+    @Query("SELECT id FROM capacities WHERE id = ANY(:ids)")
+    Flux<Long> findExistingIds(@Param("ids") List<Long> ids);
 }

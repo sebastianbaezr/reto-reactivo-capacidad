@@ -7,6 +7,8 @@ import co.com.bancolombia.model.common.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface CapacityRepository {
     Mono<Capacity> save(Capacity capacity);
     Mono<Boolean> existsByName(String name);
@@ -14,4 +16,5 @@ public interface CapacityRepository {
     Flux<Capacity> findAll();
     Mono<Page<CapacityWithTechnologies>> findAllWithPagination(PageRequest pageRequest);
     Mono<Long> count();
+    Flux<Long> findExistingIds(List<Long> ids);
 }

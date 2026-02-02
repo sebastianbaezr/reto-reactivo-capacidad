@@ -73,6 +73,14 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
     }
 
     @Override
+    public Flux<Long> findExistingIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Flux.empty();
+        }
+        return repository.findExistingIds(ids);
+    }
+
+    @Override
     public Mono<Page<CapacityWithTechnologies>> findAllWithPagination(PageRequest pageRequest) {
         return count()
             .flatMap(totalElements -> getCapacitiesWithSorting(pageRequest)

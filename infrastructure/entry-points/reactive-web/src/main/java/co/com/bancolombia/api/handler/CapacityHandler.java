@@ -2,16 +2,21 @@ package co.com.bancolombia.api.handler;
 
 import co.com.bancolombia.api.dto.request.CapacityRequest;
 import co.com.bancolombia.api.dto.request.ListCapacitiesRequest;
+import co.com.bancolombia.api.dto.response.CapacityValidationResponse;
 import co.com.bancolombia.api.mapper.CapacityMapper;
 import co.com.bancolombia.api.mapper.CapacityListMapper;
 import co.com.bancolombia.usecase.registercapacity.RegisterCapacityUseCase;
 import co.com.bancolombia.usecase.listcapacities.ListCapacitiesUseCase;
+import co.com.bancolombia.usecase.validatecapacities.ValidateCapacitiesUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -20,6 +25,7 @@ public class CapacityHandler {
 
     private final RegisterCapacityUseCase registerCapacityUseCase;
     private final ListCapacitiesUseCase listCapacitiesUseCase;
+    private final ValidateCapacitiesUseCase validateCapacitiesUseCase;
     private final CapacityMapper capacityMapper;
     private final CapacityListMapper capacityListMapper;
 
@@ -40,6 +46,27 @@ public class CapacityHandler {
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
             .doOnSuccess(v -> log.info("Capacities listed successfully"))
             .doOnError(e -> log.error("Error listing capacities", e));
+    }
+
+    public Mono<ServerResponse> validateCapacities(ServerRequest request) {
+        return extractCapacityIds(request)
+            .flatMap(validateCapacitiesUseCase::execute)
+            .map(result -> CapacityValidationResponse.builder()
+                .allExist(result.getAllExist())
+                .existingIds(result.getExistingIds())
+                .notFoundIds(result.getNotFoundIds())
+                .build())
+            .flatMap(response -> ServerResponse.ok().bodyValue(response))
+            .doOnSuccess(v -> log.info("Capacities validated successfully"))
+            .doOnError(e -> log.error("Error validating capacities", e));
+    }
+
+    private Mono<List<Long>> extractCapacityIds(ServerRequest request) {
+        return Mono.fromCallable(() -> request.queryParam("ids")
+            .map(ids -> Arrays.stream(ids.split(","))
+                .map(Long::parseLong)
+                .toList())
+            .orElse(List.of()));
     }
 
     private Mono<ListCapacitiesRequest> extractQueryParams(ServerRequest request) {
