@@ -17,7 +17,10 @@ public enum DomainErrorCode {
     TECHNOLOGY_IDS_REQUIRED("TECHNOLOGY_IDS_REQUIRED", "Debe proporcionar al menos una tecnología"),
     TECHNOLOGIES_NOT_FOUND("TECHNOLOGIES_NOT_FOUND", "Una o más tecnologías no existen"),
     TECHNOLOGY_VALIDATION_FAILED("TECHNOLOGY_VALIDATION_FAILED", "Error al validar las tecnologías"),
-    TECHNOLOGY_SERVICE_UNAVAILABLE("TECHNOLOGY_SERVICE_UNAVAILABLE", "El servicio de tecnologías no está disponible");
+    TECHNOLOGY_SERVICE_UNAVAILABLE("TECHNOLOGY_SERVICE_UNAVAILABLE", "El servicio de tecnologías no está disponible"),
+    INVALID_PAGE_NUMBER("INVALID_PAGE_NUMBER", "El número de página debe ser mayor o igual a 0"),
+    INVALID_PAGE_SIZE("INVALID_PAGE_SIZE", "El tamaño de página debe estar entre 1 y 50"),
+    INVALID_SORT_FIELD("INVALID_SORT_FIELD", "Campo de ordenamiento no válido");
 
     private final String code;
     private final String message;

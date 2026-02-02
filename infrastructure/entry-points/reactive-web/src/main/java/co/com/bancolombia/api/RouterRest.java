@@ -23,7 +23,9 @@ public class RouterRest {
             .andRoute(POST("/api/usecase/otherpath"), handler::listenPOSTUseCase);
 
         if (capacityHandler.isPresent()) {
-            router = router.andRoute(POST("/api/capacities"), capacityHandler.get()::registerCapacity);
+            router = router
+                .andRoute(GET("/api/capacities"), capacityHandler.get()::listCapacities)
+                .andRoute(POST("/api/capacities"), capacityHandler.get()::registerCapacity);
         }
 
         return router;

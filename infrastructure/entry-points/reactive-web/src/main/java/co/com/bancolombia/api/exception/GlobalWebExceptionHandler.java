@@ -62,6 +62,7 @@ public class GlobalWebExceptionHandler implements WebExceptionHandler {
     private HttpStatus determineStatusFromBusinessException(BusinessException ex) {
         return switch (ex.getCode()) {
             case "CAPACITY_NAME_ALREADY_EXISTS" -> HttpStatus.CONFLICT;
+            case "INVALID_PAGE_NUMBER", "INVALID_PAGE_SIZE", "INVALID_SORT_FIELD" -> HttpStatus.BAD_REQUEST;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
