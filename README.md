@@ -1,2 +1,2 @@
-# reto-reactivo-capacidad
-Reto Reactivo Capacidad
+# reto-reactivo
+Reto Reactivo
