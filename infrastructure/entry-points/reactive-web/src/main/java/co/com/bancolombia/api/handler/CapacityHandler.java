@@ -5,6 +5,7 @@ import co.com.bancolombia.api.dto.request.ListCapacitiesRequest;
 import co.com.bancolombia.api.dto.response.CapacityValidationResponse;
 import co.com.bancolombia.api.mapper.CapacityMapper;
 import co.com.bancolombia.api.mapper.CapacityListMapper;
+import co.com.bancolombia.model.capacity.gateways.CapacityRepository;
 import co.com.bancolombia.usecase.registercapacity.RegisterCapacityUseCase;
 import co.com.bancolombia.usecase.listcapacities.ListCapacitiesUseCase;
 import co.com.bancolombia.usecase.validatecapacities.ValidateCapacitiesUseCase;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +28,7 @@ public class CapacityHandler {
     private final RegisterCapacityUseCase registerCapacityUseCase;
     private final ListCapacitiesUseCase listCapacitiesUseCase;
     private final ValidateCapacitiesUseCase validateCapacitiesUseCase;
+    private final CapacityRepository capacityRepository;
     private final CapacityMapper capacityMapper;
     private final CapacityListMapper capacityListMapper;
 
@@ -59,6 +62,16 @@ public class CapacityHandler {
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
             .doOnSuccess(v -> log.info("Capacities validated successfully"))
             .doOnError(e -> log.error("Error validating capacities", e));
+    }
+
+    public Mono<ServerResponse> getCapacitiesByIds(ServerRequest request) {
+        return extractCapacityIds(request)
+            .flatMapMany(capacityRepository::findCapacitiesByIdsWithTechnologies)
+            .map(capacityListMapper::toSimpleWithTechnologiesResponse)
+            .collectList()
+            .flatMap(response -> ServerResponse.ok().bodyValue(response))
+            .doOnSuccess(v -> log.info("Capacities fetched successfully by ids"))
+            .doOnError(e -> log.error("Error fetching capacities by ids", e));
     }
 
     private Mono<List<Long>> extractCapacityIds(ServerRequest request) {

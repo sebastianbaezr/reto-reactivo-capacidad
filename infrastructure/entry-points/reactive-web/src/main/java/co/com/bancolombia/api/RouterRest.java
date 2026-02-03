@@ -26,6 +26,7 @@ public class RouterRest {
             router = router
                 .andRoute(GET("/api/capacities"), capacityHandler.get()::listCapacities)
                 .andRoute(GET("/api/capacities/validate"), capacityHandler.get()::validateCapacities)
+                .andRoute(GET("/api/capacities/by-ids"), capacityHandler.get()::getCapacitiesByIds)
                 .andRoute(POST("/api/capacities"), capacityHandler.get()::registerCapacity);
         }
 

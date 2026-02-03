@@ -2,6 +2,7 @@ package co.com.bancolombia.api.mapper;
 
 import co.com.bancolombia.api.dto.request.ListCapacitiesRequest;
 import co.com.bancolombia.api.dto.response.CapacityListItemResponse;
+import co.com.bancolombia.api.dto.response.CapacityWithTechnologiesSimpleResponse;
 import co.com.bancolombia.api.dto.response.PageResponse;
 import co.com.bancolombia.api.dto.response.TechnologySummaryResponse;
 import co.com.bancolombia.model.capacity.CapacityWithTechnologies;
@@ -57,6 +58,9 @@ public interface CapacityListMapper {
 
     @Mapping(target = "technologies", source = "technologies")
     CapacityListItemResponse toListItemResponse(CapacityWithTechnologies capacity);
+
+    @Mapping(target = "technologies", source = "technologies")
+    CapacityWithTechnologiesSimpleResponse toSimpleWithTechnologiesResponse(CapacityWithTechnologies capacity);
 
     TechnologySummaryResponse toTechnologySummaryResponse(TechnologySummary technology);
 

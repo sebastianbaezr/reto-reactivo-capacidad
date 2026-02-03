@@ -261,6 +261,56 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
             });
     }
 
+    @Override
+    public Flux<Capacity> findCapacitiesByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Flux.empty();
+        }
+        return Flux.fromIterable(ids)
+            .flatMap(repository::findById)
+            .flatMap(this::loadCapacityWithTechnologies);
+    }
+
+    @Override
+    public Flux<CapacityWithTechnologies> findCapacitiesByIdsWithTechnologies(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Flux.empty();
+        }
+        return Flux.fromIterable(ids)
+            .flatMap(repository::findById)
+            .collectList()
+            .flatMap(capacityDataList -> loadAndEnrichCapacitiesWithTechnologies(capacityDataList))
+            .flatMapMany(Flux::fromIterable);
+    }
+
+    private Mono<List<CapacityWithTechnologies>> loadAndEnrichCapacitiesWithTechnologies(
+            List<CapacityData> capacityDataList) {
+        List<Long> capacityIds = capacityDataList.stream()
+            .map(CapacityData::getId)
+            .toList();
+
+        return loadAllTechnologiesForCapacities(capacityIds)
+            .collectList()
+            .flatMap(techMappings -> enrichCapacitiesWithTechnologiesData(capacityDataList, techMappings));
+    }
+
+    private Mono<List<CapacityWithTechnologies>> enrichCapacitiesWithTechnologiesData(
+            List<CapacityData> capacityDataList,
+            List<CapacityTechnologyMapping> techMappings) {
+        List<Long> uniqueTechIds = techMappings.stream()
+            .map(CapacityTechnologyMapping::getTechnologyId)
+            .distinct()
+            .toList();
+
+        return technologyRepository.findByIds(uniqueTechIds)
+            .collectList()
+            .map(technologies -> {
+                Map<Long, TechnologySummary> techMap = technologies.stream()
+                    .collect(Collectors.toMap(TechnologySummary::getId, tech -> tech));
+                return buildCapacitiesWithTechnologies(capacityDataList, techMappings, techMap);
+            });
+    }
+
     @AllArgsConstructor
     @Getter
     private static class CapacityTechnologyMapping {

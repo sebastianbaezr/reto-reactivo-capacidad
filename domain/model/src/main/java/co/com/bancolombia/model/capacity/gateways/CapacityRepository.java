@@ -17,4 +17,6 @@ public interface CapacityRepository {
     Mono<Page<CapacityWithTechnologies>> findAllWithPagination(PageRequest pageRequest);
     Mono<Long> count();
     Flux<Long> findExistingIds(List<Long> ids);
+    Flux<Capacity> findCapacitiesByIds(List<Long> ids);
+    Flux<CapacityWithTechnologies> findCapacitiesByIdsWithTechnologies(List<Long> ids);
 }
