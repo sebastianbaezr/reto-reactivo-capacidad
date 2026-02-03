@@ -29,13 +29,16 @@ class CapacityRepositoryAdapterTest {
     private CapacityTechnologyR2dbcRepository capacityTechnologyRepository;
 
     @Mock
+    private co.com.bancolombia.model.technology.gateways.TechnologyRepository technologyRepository;
+
+    @Mock
     private ObjectMapper mapper;
 
     private CapacityRepositoryAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new CapacityRepositoryAdapter(capacityRepository, capacityTechnologyRepository, mapper);
+        adapter = new CapacityRepositoryAdapter(capacityRepository, capacityTechnologyRepository, technologyRepository, mapper);
     }
 
     @Test
