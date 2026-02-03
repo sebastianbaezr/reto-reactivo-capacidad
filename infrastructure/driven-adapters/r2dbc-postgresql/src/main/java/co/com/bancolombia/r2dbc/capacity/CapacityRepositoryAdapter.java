@@ -77,7 +77,9 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
         if (ids == null || ids.isEmpty()) {
             return Flux.empty();
         }
-        return repository.findExistingIds(ids);
+        return Flux.fromIterable(ids)
+            .flatMap(repository::findById)
+            .map(CapacityData::getId);
     }
 
     @Override

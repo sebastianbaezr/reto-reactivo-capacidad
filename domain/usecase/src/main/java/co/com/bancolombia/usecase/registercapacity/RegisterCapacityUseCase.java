@@ -30,7 +30,7 @@ public class RegisterCapacityUseCase {
                         DomainErrorCode.CAPACITY_NAME_ALREADY_EXISTS));
                 }
                 return technologyValidationGateway
-                    .validateTechnologiesExist(capacity.getTechnologyIds());
+                        .validateTechnologiesExist(capacity.getTechnologyIds());
             })
             .flatMap(isValid -> {
                 if (Boolean.FALSE.equals(isValid)) {
