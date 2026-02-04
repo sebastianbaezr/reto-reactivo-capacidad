@@ -30,4 +30,10 @@ public interface CapacityR2dbcRepository extends ReactiveCrudRepository<Capacity
 
     @Query("SELECT id FROM capacities WHERE id = ANY(CAST(:ids AS BIGINT[]))")
     Flux<Long> findExistingIds(@Param("ids") List<Long> ids);
+
+    @Query("UPDATE capacities SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL")
+    Mono<Integer> softDelete(@Param("id") Long id);
+
+    @Query("UPDATE capacities SET deleted_at = NULL WHERE id = :id")
+    Mono<Integer> restore(@Param("id") Long id);
 }

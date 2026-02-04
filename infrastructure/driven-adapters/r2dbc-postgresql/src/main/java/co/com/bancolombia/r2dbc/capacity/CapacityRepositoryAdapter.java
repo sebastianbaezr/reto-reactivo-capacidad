@@ -6,6 +6,8 @@ import co.com.bancolombia.model.capacity.gateways.CapacityRepository;
 import co.com.bancolombia.model.common.Page;
 import co.com.bancolombia.model.common.PageRequest;
 import co.com.bancolombia.model.common.SortDirection;
+import co.com.bancolombia.model.enums.DomainErrorCode;
+import co.com.bancolombia.model.exception.BusinessException;
 import co.com.bancolombia.model.technology.TechnologySummary;
 import co.com.bancolombia.model.technology.gateways.TechnologyRepository;
 import co.com.bancolombia.r2dbc.helper.ReactiveAdapterOperations;
@@ -309,6 +311,22 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
                     .collect(Collectors.toMap(TechnologySummary::getId, tech -> tech));
                 return buildCapacitiesWithTechnologies(capacityDataList, techMappings, techMap);
             });
+    }
+
+    @Override
+    public Mono<Long> softDeleteCapacity(Long capacityId, String sagaId) {
+        return repository.findById(capacityId)
+            .switchIfEmpty(Mono.error(new BusinessException(DomainErrorCode.CAPACITY_NOT_FOUND)))
+            .flatMap(data -> repository.softDelete(capacityId)
+                .then(Mono.just(capacityId)));
+    }
+
+    @Override
+    public Mono<Long> restoreCapacity(Long capacityId, String sagaId) {
+        return repository.findById(capacityId)
+            .switchIfEmpty(Mono.error(new BusinessException(DomainErrorCode.CAPACITY_NOT_FOUND)))
+            .flatMap(data -> repository.restore(capacityId)
+                .then(Mono.just(capacityId)));
     }
 
     @AllArgsConstructor

@@ -2,10 +2,16 @@ package co.com.bancolombia.api.handler;
 
 import co.com.bancolombia.api.dto.request.CapacityRequest;
 import co.com.bancolombia.api.dto.request.ListCapacitiesRequest;
+import co.com.bancolombia.api.dto.request.DeleteCapacitiesBatchRequest;
+import co.com.bancolombia.api.dto.request.RestoreCapacitiesBatchRequest;
 import co.com.bancolombia.api.dto.response.CapacityValidationResponse;
+import co.com.bancolombia.api.dto.response.DeleteBatchResponse;
+import co.com.bancolombia.api.dto.response.RestoreBatchResponse;
 import co.com.bancolombia.api.mapper.CapacityMapper;
 import co.com.bancolombia.api.mapper.CapacityListMapper;
 import co.com.bancolombia.model.capacity.gateways.CapacityRepository;
+import co.com.bancolombia.model.enums.DomainErrorCode;
+import co.com.bancolombia.model.exception.BusinessException;
 import co.com.bancolombia.usecase.registercapacity.RegisterCapacityUseCase;
 import co.com.bancolombia.usecase.listcapacities.ListCapacitiesUseCase;
 import co.com.bancolombia.usecase.validatecapacities.ValidateCapacitiesUseCase;
@@ -89,5 +95,39 @@ public class CapacityHandler {
             .sortBy(request.queryParam("sortBy").orElse("name"))
             .sortOrder(request.queryParam("sortOrder").orElse("asc"))
             .build());
+    }
+
+    public Mono<ServerResponse> deleteCapacitiesBatch(ServerRequest request) {
+        String sagaId = request.headers().header("X-Saga-ID")
+            .stream().findFirst().orElse(null);
+
+        return request.bodyToMono(DeleteCapacitiesBatchRequest.class)
+            .flatMapMany(req -> Flux.fromIterable(req.getCapacityIds())
+                .flatMap(capacityId -> capacityRepository.softDeleteCapacity(capacityId, sagaId)))
+            .collectList()
+            .map(deletedIds -> DeleteBatchResponse.builder()
+                .deletedCount(deletedIds.size())
+                .capacitiesDeleted(deletedIds)
+                .build())
+            .flatMap(response -> ServerResponse.ok().bodyValue(response))
+            .doOnSuccess(v -> log.info("Capacities deleted with sagaId: {}", sagaId))
+            .doOnError(e -> log.error("Error deleting capacities with sagaId: {}", sagaId, e));
+    }
+
+    public Mono<ServerResponse> restoreCapacitiesBatch(ServerRequest request) {
+        String sagaId = request.headers().header("X-Saga-ID")
+            .stream().findFirst().orElse(null);
+
+        return request.bodyToMono(RestoreCapacitiesBatchRequest.class)
+            .flatMapMany(req -> Flux.fromIterable(req.getCapacityIds())
+                .flatMap(capacityId -> capacityRepository.restoreCapacity(capacityId, sagaId)))
+            .collectList()
+            .map(restoredIds -> RestoreBatchResponse.builder()
+                .restoredCount(restoredIds.size())
+                .capacitiesRestored(restoredIds)
+                .build())
+            .flatMap(response -> ServerResponse.ok().bodyValue(response))
+            .doOnSuccess(v -> log.info("Capacities restored with sagaId: {}", sagaId))
+            .doOnError(e -> log.error("Error restoring capacities with sagaId: {}", sagaId, e));
     }
 }

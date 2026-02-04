@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.DELETE;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
@@ -27,7 +28,9 @@ public class RouterRest {
                 .andRoute(GET("/api/capacities"), capacityHandler.get()::listCapacities)
                 .andRoute(GET("/api/capacities/validate"), capacityHandler.get()::validateCapacities)
                 .andRoute(GET("/api/capacities/by-ids"), capacityHandler.get()::getCapacitiesByIds)
-                .andRoute(POST("/api/capacities"), capacityHandler.get()::registerCapacity);
+                .andRoute(POST("/api/capacities"), capacityHandler.get()::registerCapacity)
+                .andRoute(DELETE("/api/capacities/batch"), capacityHandler.get()::deleteCapacitiesBatch)
+                .andRoute(POST("/api/capacities/restore-batch"), capacityHandler.get()::restoreCapacitiesBatch);
         }
 
         return router;

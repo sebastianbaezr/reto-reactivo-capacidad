@@ -20,7 +20,9 @@ public enum DomainErrorCode {
     TECHNOLOGY_SERVICE_UNAVAILABLE("TECHNOLOGY_SERVICE_UNAVAILABLE", "El servicio de tecnologías no está disponible"),
     INVALID_PAGE_NUMBER("INVALID_PAGE_NUMBER", "El número de página debe ser mayor o igual a 0"),
     INVALID_PAGE_SIZE("INVALID_PAGE_SIZE", "El tamaño de página debe estar entre 1 y 50"),
-    INVALID_SORT_FIELD("INVALID_SORT_FIELD", "Campo de ordenamiento no válido");
+    INVALID_SORT_FIELD("INVALID_SORT_FIELD", "Campo de ordenamiento no válido"),
+    CAPACITY_NOT_FOUND("CAPACITY_NOT_FOUND", "La capacidad especificada no existe"),
+    CAPACITY_IN_USE("CAPACITY_IN_USE", "La capacidad está en uso y no puede ser eliminada");
 
     private final String code;
     private final String message;
