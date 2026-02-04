@@ -98,36 +98,30 @@ public class CapacityHandler {
     }
 
     public Mono<ServerResponse> deleteCapacitiesBatch(ServerRequest request) {
-        String sagaId = request.headers().header("X-Saga-ID")
-            .stream().findFirst().orElse(null);
-
         return request.bodyToMono(DeleteCapacitiesBatchRequest.class)
             .flatMapMany(req -> Flux.fromIterable(req.getCapacityIds())
-                .flatMap(capacityId -> capacityRepository.softDeleteCapacity(capacityId, sagaId)))
+                .flatMap(capacityRepository::softDeleteCapacity))
             .collectList()
             .map(deletedIds -> DeleteBatchResponse.builder()
                 .deletedCount(deletedIds.size())
                 .capacitiesDeleted(deletedIds)
                 .build())
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
-            .doOnSuccess(v -> log.info("Capacities deleted with sagaId: {}", sagaId))
-            .doOnError(e -> log.error("Error deleting capacities with sagaId: {}", sagaId, e));
+            .doOnSuccess(v -> log.info("Capacities deleted successfully"))
+            .doOnError(e -> log.error("Error deleting capacities", e));
     }
 
     public Mono<ServerResponse> restoreCapacitiesBatch(ServerRequest request) {
-        String sagaId = request.headers().header("X-Saga-ID")
-            .stream().findFirst().orElse(null);
-
         return request.bodyToMono(RestoreCapacitiesBatchRequest.class)
             .flatMapMany(req -> Flux.fromIterable(req.getCapacityIds())
-                .flatMap(capacityId -> capacityRepository.restoreCapacity(capacityId, sagaId)))
+                .flatMap(capacityRepository::restoreCapacity))
             .collectList()
             .map(restoredIds -> RestoreBatchResponse.builder()
                 .restoredCount(restoredIds.size())
                 .capacitiesRestored(restoredIds)
                 .build())
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
-            .doOnSuccess(v -> log.info("Capacities restored with sagaId: {}", sagaId))
-            .doOnError(e -> log.error("Error restoring capacities with sagaId: {}", sagaId, e));
+            .doOnSuccess(v -> log.info("Capacities restored successfully"))
+            .doOnError(e -> log.error("Error restoring capacities", e));
     }
 }

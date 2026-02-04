@@ -19,6 +19,7 @@ public interface CapacityRepository {
     Flux<Long> findExistingIds(List<Long> ids);
     Flux<Capacity> findCapacitiesByIds(List<Long> ids);
     Flux<CapacityWithTechnologies> findCapacitiesByIdsWithTechnologies(List<Long> ids);
-    Mono<Long> softDeleteCapacity(Long capacityId, String sagaId);
-    Mono<Long> restoreCapacity(Long capacityId, String sagaId);
+    Mono<Long> softDeleteCapacity(Long capacityId);
+    Mono<Long> restoreCapacity(Long capacityId);
+    Mono<Long> countCapacitiesByTechnologyId(Long technologyId);
 }

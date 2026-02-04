@@ -314,7 +314,7 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
     }
 
     @Override
-    public Mono<Long> softDeleteCapacity(Long capacityId, String sagaId) {
+    public Mono<Long> softDeleteCapacity(Long capacityId) {
         return repository.findById(capacityId)
             .switchIfEmpty(Mono.error(new BusinessException(DomainErrorCode.CAPACITY_NOT_FOUND)))
             .flatMap(data -> repository.softDelete(capacityId)
@@ -322,11 +322,16 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
     }
 
     @Override
-    public Mono<Long> restoreCapacity(Long capacityId, String sagaId) {
+    public Mono<Long> restoreCapacity(Long capacityId) {
         return repository.findById(capacityId)
             .switchIfEmpty(Mono.error(new BusinessException(DomainErrorCode.CAPACITY_NOT_FOUND)))
             .flatMap(data -> repository.restore(capacityId)
                 .then(Mono.just(capacityId)));
+    }
+
+    @Override
+    public Mono<Long> countCapacitiesByTechnologyId(Long technologyId) {
+        return capacityTechnologyRepository.countCapacitiesByTechnologyId(technologyId);
     }
 
     @AllArgsConstructor

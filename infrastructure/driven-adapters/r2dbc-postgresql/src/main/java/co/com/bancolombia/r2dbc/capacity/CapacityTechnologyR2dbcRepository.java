@@ -13,4 +13,7 @@ public interface CapacityTechnologyR2dbcRepository extends ReactiveCrudRepositor
 
     @Query("DELETE FROM capacity_technologies WHERE capacity_id = :capacityId")
     Mono<Void> deleteByCapacityId(@Param("capacityId") Long capacityId);
+
+    @Query("SELECT COUNT(DISTINCT capacity_id) FROM capacity_technologies WHERE technology_id = :technologyId")
+    Mono<Long> countCapacitiesByTechnologyId(@Param("technologyId") Long technologyId);
 }
