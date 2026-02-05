@@ -137,7 +137,7 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
             PageRequest pageRequest,
             long totalElements) {
         Map<Long, TechnologySummary> techMap = technologies.stream()
-            .collect(Collectors.toMap(TechnologySummary::getId, tech -> tech));
+            .collect(Collectors.toMap(TechnologySummary::id, tech -> tech));
 
         List<CapacityWithTechnologies> capacities = buildCapacitiesWithTechnologies(
             capacityDataList, techMappings, techMap);
@@ -308,7 +308,7 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
             .collectList()
             .map(technologies -> {
                 Map<Long, TechnologySummary> techMap = technologies.stream()
-                    .collect(Collectors.toMap(TechnologySummary::getId, tech -> tech));
+                    .collect(Collectors.toMap(TechnologySummary::id, tech -> tech));
                 return buildCapacitiesWithTechnologies(capacityDataList, techMappings, techMap);
             });
     }
@@ -332,6 +332,20 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
     @Override
     public Mono<Long> countCapacitiesByTechnologyId(Long technologyId) {
         return capacityTechnologyRepository.countCapacitiesByTechnologyId(technologyId);
+    }
+
+    @Override
+    public Flux<Long> findRelatedTechnologyIds(Long technologyId) {
+        return capacityTechnologyRepository.findCapacityIdsByTechnologyId(technologyId)
+            .collectList()
+            .flatMapMany(capacityIds -> {
+                if (capacityIds.isEmpty()) {
+                    return Flux.empty();
+                }
+                return capacityTechnologyRepository.findTechnologyIdsByCapacityIds(capacityIds)
+                    .filter(techId -> !techId.equals(technologyId))
+                    .distinct();
+            });
     }
 
     @AllArgsConstructor

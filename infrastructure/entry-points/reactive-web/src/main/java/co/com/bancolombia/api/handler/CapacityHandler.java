@@ -15,6 +15,7 @@ import co.com.bancolombia.model.exception.BusinessException;
 import co.com.bancolombia.usecase.registercapacity.RegisterCapacityUseCase;
 import co.com.bancolombia.usecase.listcapacities.ListCapacitiesUseCase;
 import co.com.bancolombia.usecase.validatecapacities.ValidateCapacitiesUseCase;
+import co.com.bancolombia.usecase.getcapacity.GetCapacityWithTechnologiesUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -34,13 +35,14 @@ public class CapacityHandler {
     private final RegisterCapacityUseCase registerCapacityUseCase;
     private final ListCapacitiesUseCase listCapacitiesUseCase;
     private final ValidateCapacitiesUseCase validateCapacitiesUseCase;
+    private final GetCapacityWithTechnologiesUseCase getCapacityWithTechnologiesUseCase;
     private final CapacityRepository capacityRepository;
     private final CapacityMapper capacityMapper;
     private final CapacityListMapper capacityListMapper;
 
     public Mono<ServerResponse> registerCapacity(ServerRequest request) {
         return request.bodyToMono(CapacityRequest.class)
-            .map(capacityMapper::toEntity)
+            .map(capacityMapper::toDomain)
             .flatMap(registerCapacityUseCase::execute)
             .map(capacityMapper::toResponse)
             .flatMap(response -> ServerResponse.status(201).bodyValue(response))
@@ -61,9 +63,9 @@ public class CapacityHandler {
         return extractCapacityIds(request)
             .flatMap(validateCapacitiesUseCase::execute)
             .map(result -> CapacityValidationResponse.builder()
-                .allExist(result.getAllExist())
-                .existingIds(result.getExistingIds())
-                .notFoundIds(result.getNotFoundIds())
+                .allExist(result.allExist())
+                .existingIds(result.existingIds())
+                .notFoundIds(result.notFoundIds())
                 .build())
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
             .doOnSuccess(v -> log.info("Capacities validated successfully"))
@@ -89,12 +91,25 @@ public class CapacityHandler {
     }
 
     private Mono<ListCapacitiesRequest> extractQueryParams(ServerRequest request) {
-        return Mono.fromCallable(() -> ListCapacitiesRequest.builder()
-            .page(request.queryParam("page").map(Integer::parseInt).orElse(0))
-            .size(request.queryParam("size").map(Integer::parseInt).orElse(10))
-            .sortBy(request.queryParam("sortBy").orElse("name"))
-            .sortOrder(request.queryParam("sortOrder").orElse("asc"))
-            .build());
+        return Mono.fromCallable(() -> {
+            ListCapacitiesRequest req = ListCapacitiesRequest.builder()
+                .page(request.queryParam("page").map(Integer::parseInt).orElse(0))
+                .size(request.queryParam("size").map(Integer::parseInt).orElse(10))
+                .sortBy(request.queryParam("sortBy").orElse("name"))
+                .sortOrder(request.queryParam("sortOrder").orElse("asc"))
+                .build();
+            validateListCapacitiesRequest(req);
+            return req;
+        });
+    }
+
+    private void validateListCapacitiesRequest(ListCapacitiesRequest request) {
+        if (request.getPage() < 0) {
+            throw new BusinessException(DomainErrorCode.INVALID_PAGE_NUMBER);
+        }
+        if (request.getSize() < 1 || request.getSize() > 50) {
+            throw new BusinessException(DomainErrorCode.INVALID_PAGE_SIZE);
+        }
     }
 
     public Mono<ServerResponse> deleteCapacitiesBatch(ServerRequest request) {
@@ -123,5 +138,14 @@ public class CapacityHandler {
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
             .doOnSuccess(v -> log.info("Capacities restored successfully"))
             .doOnError(e -> log.error("Error restoring capacities", e));
+    }
+
+    public Mono<ServerResponse> getCapacityWithTechnologies(ServerRequest request) {
+        Long capacityId = Long.parseLong(request.pathVariable("capacityId"));
+        return getCapacityWithTechnologiesUseCase.execute(capacityId)
+            .map(capacityListMapper::toSimpleWithTechnologiesResponse)
+            .flatMap(response -> ServerResponse.ok().bodyValue(response))
+            .doOnSuccess(v -> log.info("Capacity with technologies retrieved successfully"))
+            .doOnError(e -> log.error("Error retrieving capacity with technologies", e));
     }
 }

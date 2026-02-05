@@ -24,8 +24,8 @@ class CapacityMapperTest {
     }
 
     @Test
-    @DisplayName("Should map CapacityRequest to Capacity entity")
-    void testToEntity_Success() {
+    @DisplayName("Should map CapacityRequest to Capacity domain object")
+    void testToDomain_Success() {
         // Arrange
         CapacityRequest request = CapacityRequest.builder()
             .name("Backend")
@@ -34,7 +34,7 @@ class CapacityMapperTest {
             .build();
 
         // Act
-        Capacity result = mapper.toEntity(request);
+        Capacity result = mapper.toDomain(request);
 
         // Assert
         assertThat(result).isNotNull();
@@ -46,7 +46,7 @@ class CapacityMapperTest {
 
     @Test
     @DisplayName("Should ignore ID field when mapping request to entity")
-    void testToEntity_IdIgnored() {
+    void testToDomain_IdIgnored() {
         // Arrange
         CapacityRequest request = CapacityRequest.builder()
             .name("Frontend")
@@ -55,7 +55,7 @@ class CapacityMapperTest {
             .build();
 
         // Act
-        Capacity result = mapper.toEntity(request);
+        Capacity result = mapper.toDomain(request);
 
         // Assert
         assertThat(result.getId()).isNull();
@@ -63,7 +63,7 @@ class CapacityMapperTest {
 
     @Test
     @DisplayName("Should handle null description in request")
-    void testToEntity_NullDescription() {
+    void testToDomain_NullDescription() {
         // Arrange
         CapacityRequest request = CapacityRequest.builder()
             .name("DevOps")
@@ -72,7 +72,7 @@ class CapacityMapperTest {
             .build();
 
         // Act
-        Capacity result = mapper.toEntity(request);
+        Capacity result = mapper.toDomain(request);
 
         // Assert
         assertThat(result.getName()).isEqualTo("DevOps");

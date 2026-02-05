@@ -44,9 +44,9 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(requestedIds))
             .expectNextMatches(result ->
-                result.getAllExist() &&
-                result.getExistingIds().size() == 3 &&
-                result.getNotFoundIds().isEmpty())
+                result.allExist() &&
+                result.existingIds().size() == 3 &&
+                result.notFoundIds().isEmpty())
             .verifyComplete();
 
         verify(capacityRepository).findExistingIds(requestedIds);
@@ -64,10 +64,10 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(requestedIds))
             .expectNextMatches(result ->
-                !result.getAllExist() &&
-                result.getExistingIds().size() == 2 &&
-                result.getNotFoundIds().size() == 2 &&
-                result.getNotFoundIds().containsAll(Arrays.asList(2L, 4L)))
+                !result.allExist() &&
+                result.existingIds().size() == 2 &&
+                result.notFoundIds().size() == 2 &&
+                result.notFoundIds().containsAll(Arrays.asList(2L, 4L)))
             .verifyComplete();
 
         verify(capacityRepository).findExistingIds(requestedIds);
@@ -85,10 +85,10 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(requestedIds))
             .expectNextMatches(result ->
-                !result.getAllExist() &&
-                result.getExistingIds().isEmpty() &&
-                result.getNotFoundIds().size() == 3 &&
-                result.getNotFoundIds().containsAll(requestedIds))
+                !result.allExist() &&
+                result.existingIds().isEmpty() &&
+                result.notFoundIds().size() == 3 &&
+                result.notFoundIds().containsAll(requestedIds))
             .verifyComplete();
 
         verify(capacityRepository).findExistingIds(requestedIds);
@@ -103,9 +103,9 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(emptyList))
             .expectNextMatches(result ->
-                result.getAllExist() &&
-                result.getExistingIds().isEmpty() &&
-                result.getNotFoundIds().isEmpty())
+                result.allExist() &&
+                result.existingIds().isEmpty() &&
+                result.notFoundIds().isEmpty())
             .verifyComplete();
     }
 
@@ -115,9 +115,9 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(null))
             .expectNextMatches(result ->
-                result.getAllExist() &&
-                result.getExistingIds().isEmpty() &&
-                result.getNotFoundIds().isEmpty())
+                result.allExist() &&
+                result.existingIds().isEmpty() &&
+                result.notFoundIds().isEmpty())
             .verifyComplete();
     }
 
@@ -133,9 +133,9 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(singleId))
             .expectNextMatches(result ->
-                result.getAllExist() &&
-                result.getExistingIds().size() == 1 &&
-                result.getExistingIds().contains(1L))
+                result.allExist() &&
+                result.existingIds().size() == 1 &&
+                result.existingIds().contains(1L))
             .verifyComplete();
 
         verify(capacityRepository).findExistingIds(singleId);
@@ -153,9 +153,9 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(singleId))
             .expectNextMatches(result ->
-                !result.getAllExist() &&
-                result.getNotFoundIds().size() == 1 &&
-                result.getNotFoundIds().contains(1L))
+                !result.allExist() &&
+                result.notFoundIds().size() == 1 &&
+                result.notFoundIds().contains(1L))
             .verifyComplete();
 
         verify(capacityRepository).findExistingIds(singleId);
@@ -173,10 +173,10 @@ class ValidateCapacitiesUseCaseTest {
         // Act & Assert
         StepVerifier.create(validateCapacitiesUseCase.execute(duplicateIds))
             .expectNextMatches(result ->
-                !result.getAllExist() &&
-                result.getExistingIds().size() == 2 &&
-                result.getNotFoundIds().size() == 1 &&
-                result.getNotFoundIds().contains(3L))
+                !result.allExist() &&
+                result.existingIds().size() == 2 &&
+                result.notFoundIds().size() == 1 &&
+                result.notFoundIds().contains(3L))
             .verifyComplete();
 
         verify(capacityRepository).findExistingIds(duplicateIds);
@@ -204,15 +204,14 @@ class ValidateCapacitiesUseCaseTest {
     @DisplayName("Should validate ValidationResult builder and getters")
     void testExecute_ValidationResultBuilder() {
         // Act
-        ValidateCapacitiesUseCase.ValidationResult result = ValidateCapacitiesUseCase.ValidationResult.builder()
-            .allExist(true)
-            .existingIds(Arrays.asList(1L, 2L, 3L))
-            .notFoundIds(Arrays.asList())
-            .build();
+        ValidateCapacitiesUseCase.ValidationResult result = new ValidateCapacitiesUseCase.ValidationResult(
+            true,
+            Arrays.asList(1L, 2L, 3L),
+            Collections.emptyList());
 
         // Assert - Direct assertion since no Mono involved
-        org.assertj.core.api.Assertions.assertThat(result.getAllExist()).isTrue();
-        org.assertj.core.api.Assertions.assertThat(result.getExistingIds()).hasSize(3);
-        org.assertj.core.api.Assertions.assertThat(result.getNotFoundIds()).isEmpty();
+        org.assertj.core.api.Assertions.assertThat(result.allExist()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(result.existingIds()).hasSize(3);
+        org.assertj.core.api.Assertions.assertThat(result.notFoundIds()).isEmpty();
     }
 }

@@ -22,4 +22,5 @@ public interface CapacityRepository {
     Mono<Long> softDeleteCapacity(Long capacityId);
     Mono<Long> restoreCapacity(Long capacityId);
     Mono<Long> countCapacitiesByTechnologyId(Long technologyId);
+    Flux<Long> findRelatedTechnologyIds(Long technologyId);
 }

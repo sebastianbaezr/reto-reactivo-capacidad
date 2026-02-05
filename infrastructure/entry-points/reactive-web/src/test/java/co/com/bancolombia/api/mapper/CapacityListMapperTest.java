@@ -350,10 +350,7 @@ class CapacityListMapperTest {
     @DisplayName("Should map TechnologySummary to TechnologySummaryResponse")
     void testToTechnologySummaryResponse_Success() {
         // Arrange
-        TechnologySummary technology = TechnologySummary.builder()
-            .id(1L)
-            .name("Java")
-            .build();
+        TechnologySummary technology = new TechnologySummary(1L, "Java");
 
         // Act
         TechnologySummaryResponse result = mapper.toTechnologySummaryResponse(technology);
@@ -368,15 +365,9 @@ class CapacityListMapperTest {
     @DisplayName("Should map list of TechnologySummary to TechnologySummaryResponse list")
     void testToTechnologySummaryResponseList_Success() {
         // Arrange
-        TechnologySummary tech1 = TechnologySummary.builder()
-            .id(1L)
-            .name("Java")
-            .build();
+        TechnologySummary tech1 = new TechnologySummary(1L, "Java");
 
-        TechnologySummary tech2 = TechnologySummary.builder()
-            .id(2L)
-            .name("Python")
-            .build();
+        TechnologySummary tech2 = new TechnologySummary(2L, "Python");
 
         List<TechnologySummary> technologies = Arrays.asList(tech1, tech2);
 

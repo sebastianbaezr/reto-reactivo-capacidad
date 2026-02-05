@@ -60,7 +60,7 @@ public class TechnologyDetailsClientAdapter implements TechnologyRepository {
             .onStatus(HttpStatusCode::is5xxServerError, this::handleServerError)
             .bodyToFlux(TechnologySummary.class)
             .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-            .doOnNext(tech -> log.debug("Processing technology: {}", tech.getName()))
+            .doOnNext(tech -> log.debug("Processing technology: {}", tech.name()))
             .doOnComplete(() -> log.info("Successfully fetched all technologies"))
             .onErrorResume(error -> handleRequestError(error));
     }

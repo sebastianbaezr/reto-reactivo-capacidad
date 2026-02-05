@@ -18,27 +18,28 @@ public class ListCapacitiesUseCase {
     private static final String SORT_BY_TECHNOLOGY_COUNT = "technologyCount";
 
     public Mono<Page<CapacityWithTechnologies>> execute(PageRequest pageRequest) {
-        try {
-            validatePageRequest(pageRequest);
-        } catch (BusinessException e) {
-            return Mono.error(e);
-        }
-
-        return capacityRepository.findAllWithPagination(pageRequest);
+        return Mono.defer(() -> validatePageNumber(pageRequest))
+            .flatMap(this::validatePageSize)
+            .flatMap(this::validateSortField)
+            .flatMap(capacityRepository::findAllWithPagination);
     }
 
-    private void validatePageRequest(PageRequest pageRequest) {
-        if (pageRequest.getPage() < 0) {
-            throw new BusinessException(DomainErrorCode.INVALID_PAGE_NUMBER);
-        }
+    private Mono<PageRequest> validatePageNumber(PageRequest pageRequest) {
+        return pageRequest.getPage() < 0
+            ? Mono.error(new BusinessException(DomainErrorCode.INVALID_PAGE_NUMBER))
+            : Mono.just(pageRequest);
+    }
 
-        if (pageRequest.getSize() < 1 || pageRequest.getSize() > MAX_PAGE_SIZE) {
-            throw new BusinessException(DomainErrorCode.INVALID_PAGE_SIZE);
-        }
+    private Mono<PageRequest> validatePageSize(PageRequest pageRequest) {
+        return (pageRequest.getSize() < 1 || pageRequest.getSize() > MAX_PAGE_SIZE)
+            ? Mono.error(new BusinessException(DomainErrorCode.INVALID_PAGE_SIZE))
+            : Mono.just(pageRequest);
+    }
 
+    private Mono<PageRequest> validateSortField(PageRequest pageRequest) {
         String sortBy = pageRequest.getSortBy();
-        if (sortBy != null && !sortBy.equals(SORT_BY_NAME) && !sortBy.equals(SORT_BY_TECHNOLOGY_COUNT)) {
-            throw new BusinessException(DomainErrorCode.INVALID_SORT_FIELD);
-        }
+        return (sortBy != null && !sortBy.equals(SORT_BY_NAME) && !sortBy.equals(SORT_BY_TECHNOLOGY_COUNT))
+            ? Mono.error(new BusinessException(DomainErrorCode.INVALID_SORT_FIELD))
+            : Mono.just(pageRequest);
     }
 }

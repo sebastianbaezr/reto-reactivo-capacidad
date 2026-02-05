@@ -1,6 +1,5 @@
-package co.com.bancolombia.api.dto.response;
+package co.com.bancolombia.model.technology;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,14 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class TechnologyCapacityCountResponse {
-
-    @JsonProperty("technology_id")
-    private Long technologyId;
-
-    @JsonProperty("capacity_count")
+public class TechnologyCapacityCountWithRelated {
     private Long capacityCount;
-
-    @JsonProperty("related_technology_ids")
     private List<Long> relatedTechnologyIds;
 }

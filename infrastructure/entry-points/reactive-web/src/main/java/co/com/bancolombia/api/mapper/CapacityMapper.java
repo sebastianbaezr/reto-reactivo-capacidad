@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 public interface CapacityMapper {
 
     @Mapping(target = "id", ignore = true)
-    Capacity toEntity(CapacityRequest request);
+    Capacity toDomain(CapacityRequest request);
 
     @Mapping(target = "technologies", ignore = true)
     CapacityResponse toResponse(Capacity entity);

@@ -15,29 +15,20 @@ public class RegisterCapacityUseCase {
     private final TechnologyValidationGateway technologyValidationGateway;
 
     public Mono<Capacity> execute(Capacity capacity) {
-        try {
+        return Mono.defer(() -> {
             CapacityValidator.validateName(capacity.getName());
             CapacityValidator.validateDescription(capacity.getDescription());
             CapacityValidator.validateTechnologyIds(capacity.getTechnologyIds());
-        } catch (BusinessException e) {
-            return Mono.error(e);
-        }
-
-        return capacityRepository.existsByName(capacity.getName())
-            .flatMap(exists -> {
-                if (Boolean.TRUE.equals(exists)) {
-                    return Mono.error(new BusinessException(
-                        DomainErrorCode.CAPACITY_NAME_ALREADY_EXISTS));
-                }
-                return technologyValidationGateway
-                        .validateTechnologiesExist(capacity.getTechnologyIds());
-            })
-            .flatMap(isValid -> {
-                if (Boolean.FALSE.equals(isValid)) {
-                    return Mono.error(new BusinessException(
-                        DomainErrorCode.TECHNOLOGIES_NOT_FOUND));
-                }
-                return capacityRepository.save(capacity);
-            });
+            return Mono.just(capacity);
+        })
+            .flatMap(cap -> capacityRepository.existsByName(cap.getName())
+                .filter(exists -> !exists)
+                .switchIfEmpty(Mono.error(new BusinessException(DomainErrorCode.CAPACITY_NAME_ALREADY_EXISTS)))
+                .map(v -> cap))
+            .flatMap(cap -> technologyValidationGateway.validateTechnologiesExist(cap.getTechnologyIds())
+                .filter(isValid -> isValid)
+                .switchIfEmpty(Mono.error(new BusinessException(DomainErrorCode.TECHNOLOGIES_NOT_FOUND)))
+                .map(v -> cap))
+            .flatMap(capacityRepository::save);
     }
 }

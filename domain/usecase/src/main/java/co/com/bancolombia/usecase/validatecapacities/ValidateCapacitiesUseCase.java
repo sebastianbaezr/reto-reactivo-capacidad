@@ -30,67 +30,20 @@ public class ValidateCapacitiesUseCase {
             .filter(id -> !existingIds.contains(id))
             .toList();
 
-        return ValidationResult.builder()
-            .allExist(notFoundIds.isEmpty())
-            .existingIds(List.copyOf(existingIds))
-            .notFoundIds(notFoundIds)
-            .build();
+        return new ValidationResult(
+            notFoundIds.isEmpty(),
+            List.copyOf(existingIds),
+            notFoundIds
+        );
     }
 
-    public static class ValidationResult {
-        private final Boolean allExist;
-        private final List<Long> existingIds;
-        private final List<Long> notFoundIds;
-
-        private ValidationResult(Boolean allExist, List<Long> existingIds, List<Long> notFoundIds) {
-            this.allExist = allExist;
-            this.existingIds = existingIds;
-            this.notFoundIds = notFoundIds;
-        }
-
+    public record ValidationResult(
+        Boolean allExist,
+        List<Long> existingIds,
+        List<Long> notFoundIds
+    ) {
         public static ValidationResult empty() {
             return new ValidationResult(true, List.of(), List.of());
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public Boolean getAllExist() {
-            return allExist;
-        }
-
-        public List<Long> getExistingIds() {
-            return existingIds;
-        }
-
-        public List<Long> getNotFoundIds() {
-            return notFoundIds;
-        }
-
-        public static class Builder {
-            private Boolean allExist;
-            private List<Long> existingIds;
-            private List<Long> notFoundIds;
-
-            public Builder allExist(Boolean allExist) {
-                this.allExist = allExist;
-                return this;
-            }
-
-            public Builder existingIds(List<Long> existingIds) {
-                this.existingIds = existingIds;
-                return this;
-            }
-
-            public Builder notFoundIds(List<Long> notFoundIds) {
-                this.notFoundIds = notFoundIds;
-                return this;
-            }
-
-            public ValidationResult build() {
-                return new ValidationResult(allExist, existingIds, notFoundIds);
-            }
         }
     }
 }

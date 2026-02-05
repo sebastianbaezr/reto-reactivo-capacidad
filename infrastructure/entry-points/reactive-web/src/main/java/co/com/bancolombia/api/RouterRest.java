@@ -30,6 +30,7 @@ public class RouterRest {
                 .andRoute(GET("/api/capacities"), capacityHandler.get()::listCapacities)
                 .andRoute(GET("/api/capacities/validate"), capacityHandler.get()::validateCapacities)
                 .andRoute(GET("/api/capacities/by-ids"), capacityHandler.get()::getCapacitiesByIds)
+                .andRoute(GET("/api/capacities/{capacityId}/technologies"), capacityHandler.get()::getCapacityWithTechnologies)
                 .andRoute(POST("/api/capacities"), capacityHandler.get()::registerCapacity)
                 .andRoute(DELETE("/api/capacities/batch"), capacityHandler.get()::deleteCapacitiesBatch)
                 .andRoute(POST("/api/capacities/restore-batch"), capacityHandler.get()::restoreCapacitiesBatch);

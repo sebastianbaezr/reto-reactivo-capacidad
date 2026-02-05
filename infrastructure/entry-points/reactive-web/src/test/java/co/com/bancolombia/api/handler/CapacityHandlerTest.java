@@ -97,7 +97,7 @@ class CapacityHandlerTest {
 
         when(serverRequest.bodyToMono(CapacityRequest.class))
             .thenReturn(Mono.just(request));
-        when(capacityMapper.toEntity(request))
+        when(capacityMapper.toDomain(request))
             .thenReturn(capacity);
         when(registerCapacityUseCase.execute(capacity))
             .thenReturn(Mono.just(savedCapacity));
@@ -137,7 +137,7 @@ class CapacityHandlerTest {
 
         when(serverRequest.bodyToMono(CapacityRequest.class))
             .thenReturn(Mono.just(request));
-        when(capacityMapper.toEntity(request))
+        when(capacityMapper.toDomain(request))
             .thenReturn(capacity);
         when(registerCapacityUseCase.execute(capacity))
             .thenReturn(Mono.error(new BusinessException(DomainErrorCode.CAPACITY_NAME_ALREADY_EXISTS)));
@@ -160,7 +160,7 @@ class CapacityHandlerTest {
 
         when(serverRequest.bodyToMono(CapacityRequest.class))
             .thenReturn(Mono.just(request));
-        when(capacityMapper.toEntity(request))
+        when(capacityMapper.toDomain(request))
             .thenThrow(new RuntimeException("Mapping failed"));
 
         // Act & Assert
@@ -295,11 +295,10 @@ class CapacityHandlerTest {
         // Arrange
         when(serverRequest.queryParam("ids")).thenReturn(Optional.of("1,2,3"));
 
-        ValidateCapacitiesUseCase.ValidationResult result = ValidateCapacitiesUseCase.ValidationResult.builder()
-            .allExist(true)
-            .existingIds(Arrays.asList(1L, 2L, 3L))
-            .notFoundIds(new ArrayList<>())
-            .build();
+        ValidateCapacitiesUseCase.ValidationResult result = new ValidateCapacitiesUseCase.ValidationResult(
+            true,
+            Arrays.asList(1L, 2L, 3L),
+            new ArrayList<>());
 
         when(validateCapacitiesUseCase.execute(any(List.class)))
             .thenReturn(Mono.just(result));
@@ -345,11 +344,10 @@ class CapacityHandlerTest {
         // Arrange
         when(serverRequest.queryParam("ids")).thenReturn(Optional.of("1,2,3,4"));
 
-        ValidateCapacitiesUseCase.ValidationResult result = ValidateCapacitiesUseCase.ValidationResult.builder()
-            .allExist(false)
-            .existingIds(Arrays.asList(1L, 3L))
-            .notFoundIds(Arrays.asList(2L, 4L))
-            .build();
+        ValidateCapacitiesUseCase.ValidationResult result = new ValidateCapacitiesUseCase.ValidationResult(
+            false,
+            Arrays.asList(1L, 3L),
+            Arrays.asList(2L, 4L));
 
         when(validateCapacitiesUseCase.execute(any(List.class)))
             .thenReturn(Mono.just(result));
