@@ -13,28 +13,33 @@ public class ValidateCapacitiesUseCase {
     private final CapacityRepository capacityRepository;
 
     public Mono<ValidationResult> execute(List<Long> capacityIds) {
-        if (capacityIds == null || capacityIds.isEmpty()) {
-            return Mono.just(ValidationResult.empty());
-        }
-
-        Set<Long> requestedIds = new HashSet<>(capacityIds);
-
-        return capacityRepository.findExistingIds(capacityIds)
-            .collectList()
-            .map(HashSet::new)
-            .map(existingIds -> buildResult(requestedIds, existingIds));
+        return Mono.justOrEmpty(capacityIds)
+            .filter(ids -> !ids.isEmpty())
+            .map(Set::copyOf)
+            .flatMap(this::validateExistenceAndBuildResult)
+            .switchIfEmpty(Mono.just(ValidationResult.empty()));
     }
 
-    private ValidationResult buildResult(Set<Long> requestedIds, Set<Long> existingIds) {
-        List<Long> notFoundIds = requestedIds.stream()
-            .filter(id -> !existingIds.contains(id))
-            .toList();
+    private Mono<ValidationResult> validateExistenceAndBuildResult(Set<Long> requestedIds) {
+        return capacityRepository.findExistingIds(requestedIds.stream().toList())
+            .collectList()
+            .map(HashSet::new)
+            .map(existingIds -> buildValidationResult(requestedIds, existingIds));
+    }
 
+    private ValidationResult buildValidationResult(Set<Long> requestedIds, Set<Long> existingIds) {
+        List<Long> notFoundIds = findNotFoundIds(requestedIds, existingIds);
         return new ValidationResult(
             notFoundIds.isEmpty(),
             List.copyOf(existingIds),
             notFoundIds
         );
+    }
+
+    private List<Long> findNotFoundIds(Set<Long> requestedIds, Set<Long> existingIds) {
+        return requestedIds.stream()
+            .filter(id -> !existingIds.contains(id))
+            .toList();
     }
 
     public record ValidationResult(
