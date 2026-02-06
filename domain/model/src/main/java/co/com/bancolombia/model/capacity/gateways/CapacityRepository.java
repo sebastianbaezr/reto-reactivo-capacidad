@@ -23,4 +23,5 @@ public interface CapacityRepository {
     Mono<Long> restoreCapacity(Long capacityId);
     Mono<Long> countCapacitiesByTechnologyId(Long technologyId);
     Flux<Long> findRelatedTechnologyIds(Long technologyId);
+    Mono<Long> countTechnologiesByCapacityId(Long capacityId);
 }

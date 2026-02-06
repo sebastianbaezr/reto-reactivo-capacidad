@@ -348,6 +348,11 @@ public class CapacityRepositoryAdapter extends ReactiveAdapterOperations<Capacit
             });
     }
 
+    @Override
+    public Mono<Long> countTechnologiesByCapacityId(Long capacityId) {
+        return capacityTechnologyRepository.countTechnologiesByCapacityId(capacityId);
+    }
+
     @AllArgsConstructor
     @Getter
     private static class CapacityTechnologyMapping {

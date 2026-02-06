@@ -24,4 +24,7 @@ public interface CapacityTechnologyR2dbcRepository extends ReactiveCrudRepositor
 
     @Query("SELECT DISTINCT technology_id FROM capacity_technologies WHERE capacity_id IN (:capacityIds)")
     Flux<Long> findTechnologyIdsByCapacityIds(@Param("capacityIds") List<Long> capacityIds);
+
+    @Query("SELECT COUNT(DISTINCT technology_id) FROM capacity_technologies WHERE capacity_id = :capacityId")
+    Mono<Long> countTechnologiesByCapacityId(@Param("capacityId") Long capacityId);
 }

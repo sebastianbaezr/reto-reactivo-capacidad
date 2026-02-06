@@ -7,6 +7,7 @@ import co.com.bancolombia.api.dto.request.RestoreCapacitiesBatchRequest;
 import co.com.bancolombia.api.dto.response.CapacityValidationResponse;
 import co.com.bancolombia.api.dto.response.DeleteBatchResponse;
 import co.com.bancolombia.api.dto.response.RestoreBatchResponse;
+import co.com.bancolombia.api.dto.response.CapacityTechnologyCountResponse;
 import co.com.bancolombia.api.mapper.CapacityMapper;
 import co.com.bancolombia.api.mapper.CapacityListMapper;
 import co.com.bancolombia.model.capacity.gateways.CapacityRepository;
@@ -16,6 +17,7 @@ import co.com.bancolombia.usecase.registercapacity.RegisterCapacityUseCase;
 import co.com.bancolombia.usecase.listcapacities.ListCapacitiesUseCase;
 import co.com.bancolombia.usecase.validatecapacities.ValidateCapacitiesUseCase;
 import co.com.bancolombia.usecase.getcapacity.GetCapacityWithTechnologiesUseCase;
+import co.com.bancolombia.usecase.getcapacitytechnologycounts.GetCapacityTechnologyCountsUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -36,6 +38,7 @@ public class CapacityHandler {
     private final ListCapacitiesUseCase listCapacitiesUseCase;
     private final ValidateCapacitiesUseCase validateCapacitiesUseCase;
     private final GetCapacityWithTechnologiesUseCase getCapacityWithTechnologiesUseCase;
+    private final GetCapacityTechnologyCountsUseCase getCapacityTechnologyCountsUseCase;
     private final CapacityRepository capacityRepository;
     private final CapacityMapper capacityMapper;
     private final CapacityListMapper capacityListMapper;
@@ -147,5 +150,20 @@ public class CapacityHandler {
             .flatMap(response -> ServerResponse.ok().bodyValue(response))
             .doOnSuccess(v -> log.info("Capacity with technologies retrieved successfully"))
             .doOnError(e -> log.error("Error retrieving capacity with technologies", e));
+    }
+
+    public Mono<ServerResponse> getCapacityTechnologyCounts(ServerRequest request) {
+        return extractCapacityIds(request)
+            .flatMap(getCapacityTechnologyCountsUseCase::execute)
+            .map(counts -> CapacityTechnologyCountResponse.builder()
+                .capacityTechnologyCounts(counts.entrySet().stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                        e -> String.valueOf(e.getKey()),
+                        java.util.Map.Entry::getValue
+                    )))
+                .build())
+            .flatMap(response -> ServerResponse.ok().bodyValue(response))
+            .doOnSuccess(v -> log.info("Capacity technology counts retrieved successfully"))
+            .doOnError(e -> log.error("Error retrieving capacity technology counts", e));
     }
 }
